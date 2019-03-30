@@ -74,7 +74,7 @@ def generate_tex(tex_str):
 def main(words):
     tex_content = tex(words)
     pdf, csv = generate_tex(tex_content)
-    print(csv)
+    print(csv.strip())
 
 
 if __name__ == '__main__':
