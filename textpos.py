@@ -88,8 +88,9 @@ def generate_tex(tex_str):
         fname = lambda ext : '__generated.{}'.format(ext)
         with open(fname('tex'), 'w') as out:
             out.write(tex_str)
-        os.system('pdflatex {}'.format(fname('tex')))
-        os.system('pdflatex {}'.format(fname('tex')))  # for references
+        cmd = 'pdflatex -interaction=batchmode {} >/dev/null 2>&1'
+        os.system(cmd.format(fname('tex')))
+        os.system(cmd.format(fname('tex')))  # for references
         pdf_path, csv_path =  (os.path.abspath(fname('pdf')),
                                os.path.abspath(fname('csv')))
         os.system('cp {} {}'.format(pdf_path, home('out.pdf')))
@@ -98,11 +99,13 @@ def generate_tex(tex_str):
             csv_content = ''.join(csv_file.readlines())
     return home('out.pdf'), csv_content
 
+
 def main(words):
     tex_content = tex(words)
     pdf, csv = generate_tex(tex_content)
     print(pdf)
     print(csv)
+
 
 if __name__ == '__main__':
     from sys import argv
