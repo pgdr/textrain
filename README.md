@@ -20,3 +20,6 @@ wordn,15837366,46515936,0.0pt
 
 The `x` and `y` positions can be used to get the bounding box of each word in
 the PDF document.
+
+
+TODO: use `pdftotext -bbox` and parse HTML instead of homemade bbox.

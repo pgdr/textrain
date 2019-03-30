@@ -6,9 +6,11 @@ language: python
 python:
   - "3.6"
 
+before_install:
+  - sudo apt install texlive-latex-base
+  - sudo apt install texlive-extra
+
 install:
-  - apt install texlive-latex-base
-  - apt install texlive-extra
   - python setup.py install
 
 
