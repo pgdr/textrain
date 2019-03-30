@@ -3,15 +3,12 @@ env:
 
 language: python
 
-apt:
-  packages:
-  - texlive-latex-base
-  - texlive-extra
-
 python:
   - "3.6"
 
 install:
+  - apt install texlive-latex-base
+  - apt install texlive-extra
   - python setup.py install
 
 

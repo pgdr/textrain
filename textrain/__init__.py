@@ -52,6 +52,20 @@ def tex(words):
     return _format(TEX, '\n'.join(['\\eins[%s]{%s}' % (word,_supligs(word)) for word in words]))
 
 
+def __run(get_fname):
+    cmd = 'pdflatex -interaction=batchmode {}'
+    quiet = ' >/dev/null 2>&1'
+    if not os.getenv('VERBOSE'):
+        cmd += quiet
+    ret = os.system(cmd.format(get_fname('tex')))
+    if ret:
+        raise OSError('{} exit with status {}'.format(cmd, ret))
+    ret = os.system(cmd.format(get_fname('tex')))  # for references
+    if ret:
+        raise OSError('{} exit with status {}'.format(cmd, ret))
+
+    return os.path.abspath(get_fname('pdf')), os.path.abspath(get_fname('csv'))
+
 def generate_tex(tex_str):
     old_cwd = os.getcwd()
     home = lambda f : os.path.abspath(os.path.join(old_cwd, f))
@@ -59,15 +73,10 @@ def generate_tex(tex_str):
         fname = lambda ext : '__generated.{}'.format(ext)
         with open(fname('tex'), 'w') as out:
             out.write(tex_str)
-        cmd = 'pdflatex -interaction=batchmode {}'
-        quiet = ' >/dev/null 2>&1'
-        if not os.getenv('VERBOSE'):
-            cmd += quiet
-        os.system(cmd.format(fname('tex')))
-        os.system(cmd.format(fname('tex')))  # for references
-        pdf_path, csv_path =  (os.path.abspath(fname('pdf')),
-                               os.path.abspath(fname('csv')))
+
+        pdf_path, csv_path = __run(fname)
         os.system('cp {} {}'.format(pdf_path, home('out.pdf')))
+
         csv_content = ''
         with open(csv_path, 'r') as csv_file:
             csv_content = ''.join(csv_file.readlines())
