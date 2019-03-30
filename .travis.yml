@@ -1,0 +1,15 @@
+language: python
+
+apt:
+  packages:
+  - texlive-extra
+
+python:
+  - "3.6"
+
+install:
+  - pip setup.py install
+
+
+script:
+  - python -m textrain hello world
