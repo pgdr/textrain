@@ -66,9 +66,6 @@ TEX = """\\nonstopmode
     \\immediate\\write\\mywrite{#1,\\zposx{#1-ll},\\zposy{#1-ll},\\the\\dd}%
    }
 
-
-\\newcommand{\\train}[1]{\\eins[#1]{#1}}
-
 \\begin{document}
 
 MY_OWN_FORMAT_FUNCTION
@@ -77,8 +74,11 @@ MY_OWN_FORMAT_FUNCTION
 """
 
 
+def _supligs(word):
+    return '{}'.join([w for w in word])  # suppress ligatures
+
 def tex(words):
-    return _format(TEX, '\n'.join(['\\train{%s}' % word for word in words]))
+    return _format(TEX, '\n'.join(['\\eins[%s]{%s}' % (word,_supligs(word)) for word in words]))
 
 
 def generate_tex(tex_str):
