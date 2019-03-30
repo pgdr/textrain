@@ -51,10 +51,31 @@ def _format(text, replacement):
 
 # /UTIL
 
+TEX = """\\nonstopmode
+\\documentclass{article}
+\\usepackage{zref-abspos}
+\\newwrite\\mywrite
+\\immediate\\openout\\mywrite=\\jobname.csv\\relax
+\\immediate\\write\\mywrite{word,posx,posy,depth}
+\\newlength{\\dd}
 
-TEX = ''
-with open('data/template.tex', 'r') as __tex_in:
-    TEX = ''.join(__tex_in.readlines())
+\\newcommand{\\eins}[2][1]%
+   {\\zsavepos{#1-ll}%     Store the current position as #1-ll
+    {#2}%                 Output text provided as mandatory argument
+    \\settodepth{\\dd}{#2}% Measure the depth of the mandatory argument
+    \\immediate\\write\\mywrite{#1,\\zposx{#1-ll},\\zposy{#1-ll},\\the\\dd}%
+   }
+
+
+\\newcommand{\\train}[1]{\\eins[#1]{#1}}
+
+\\begin{document}
+
+MY_OWN_FORMAT_FUNCTION
+
+\\end{document}
+"""
+
 
 def tex(words):
     return _format(TEX, '\n'.join(['\\train{%s}' % word for word in words]))
