@@ -1,18 +1,16 @@
+sudo:       required
+language:   generic
+services:   docker
+
+script:
+- docker pull strauman/travis-latexbuild:small # select small texlive scheme
+- docker run --mount src=$TRAVIS_BUILD_DIR/,target=/repo,type=bind strauman/travis-latexbuild:small # also it here
+
 env:
   - VERBOSE=1
 
-language: python
-
-python:
-  - "3.6"
-
-before_install:
-  - sudo apt install texlive-latex-base
-  - sudo apt install texlive-extra
-
 install:
   - python setup.py install
-
 
 script:
   - python -m textrain hello world
