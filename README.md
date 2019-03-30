@@ -23,3 +23,10 @@ the PDF document.
 
 
 TODO: use `pdftotext -bbox` and parse HTML instead of homemade bbox.
+
+1. `pdftotext -bbox in.pdf`
+2. Extract `<page>`'s `height` attribute (e.g. `841.89`)
+3. Crop pdf to a standalone pdf by using `pdfcrop`: `pdfcrop -bbox "xMin height-yMax xMax height-yMin" in.pdf
+4. `pdftoppm in-crop.pdf outputname -png`
+
+Repeat
