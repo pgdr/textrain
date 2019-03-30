@@ -1,3 +1,6 @@
+env:
+  - VERBOSE=1
+
 language: python
 
 apt:

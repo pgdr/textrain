@@ -59,7 +59,10 @@ def generate_tex(tex_str):
         fname = lambda ext : '__generated.{}'.format(ext)
         with open(fname('tex'), 'w') as out:
             out.write(tex_str)
-        cmd = 'pdflatex -interaction=batchmode {} >/dev/null 2>&1'
+        cmd = 'pdflatex -interaction=batchmode {}'
+        quiet = ' >/dev/null 2>&1'
+        if not os.getenv('VERBOSE'):
+            cmd += quiet
         os.system(cmd.format(fname('tex')))
         os.system(cmd.format(fname('tex')))  # for references
         pdf_path, csv_path =  (os.path.abspath(fname('pdf')),
