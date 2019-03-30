@@ -5,6 +5,7 @@ language: python
 
 apt:
   packages:
+  - texlive-latex-base
   - texlive-extra
 
 python:
