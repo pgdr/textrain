@@ -31,6 +31,15 @@ def readme():
         return __description
 
 
+
+
+REQUIREMENTS = ('pdftotext', 'pdflatex', 'pdftoppm')
+for req in REQUIREMENTS:
+    msg = 'Missing required tool {}.  Consider apt install it.'.format(req)
+    print('Checking for tool {}'.format(req), end=' ... ')
+    assert os.system('which ' + req) == 0, msg
+    print('ok')
+
 setup(
     name="textrain",
     packages=["textrain"],
@@ -47,8 +56,8 @@ setup(
         "Source Code": __source,
     },
     license="The unlicense",
-    keywords="ocr education tex",
-    version="0.0.1",
+    keywords="ocr education tex poppler latex pdflatex",
+    version="0.0.2",
     entry_points={
         'console_scripts': [
             'textrain = textrain:main',

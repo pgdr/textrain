@@ -6,6 +6,9 @@ import contextlib
 from xml.etree import ElementTree as ET
 from collections import namedtuple
 
+__version__ = '0.0.2'
+
+
 ## UTIL
 
 @contextlib.contextmanager
@@ -129,13 +132,6 @@ def run(words):
 
 
 def main():
-    requirements = ('pdftotext',
-                    'pdflatex',
-                    'pdftoppm',
-                    )
-    for req in requirements:
-        __run_raise('which ' + req, msg='Missing required executable {}'.format(req))
-
     from sys import argv
     if len(argv) < 2:
         exit('Usage: textpos word1 word2 ... wordn')
