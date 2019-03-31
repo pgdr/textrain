@@ -3,6 +3,8 @@ import os
 import shutil
 import tempfile
 import contextlib
+from xml.etree import ElementTree as ET
+from collections import namedtuple
 
 ## UTIL
 
@@ -24,18 +26,6 @@ def _format(text, replacement):
 
 TEX = """\\nonstopmode
 \\documentclass{article}
-\\usepackage{zref-abspos}
-\\newwrite\\mywrite
-\\immediate\\openout\\mywrite=\\jobname.csv\\relax
-\\immediate\\write\\mywrite{word,posx,posy,depth}
-\\newlength{\\dd}
-
-\\newcommand{\\eins}[2][1]%
-   {\\zsavepos{#1-ll}%     Store the current position as #1-ll
-    {#2}%                 Output text provided as mandatory argument
-    \\settodepth{\\dd}{#2}% Measure the depth of the mandatory argument
-    \\immediate\\write\\mywrite{#1,\\zposx{#1-ll},\\zposy{#1-ll},\\the\\dd}%
-   }
 
 \\begin{document}
 
@@ -48,46 +38,93 @@ MY_OWN_FORMAT_FUNCTION
 def _supligs(word):
     return '{}'.join([w for w in word])  # suppress ligatures
 
+
 def tex(words):
-    return _format(TEX, '\n'.join(['\\eins[%s]{%s}' % (word,_supligs(word)) for word in words]))
+    return _format(TEX, '\n'.join(['%s' % _supligs(word) for word in words]))
 
 
-def __run(get_fname):
-    cmd = 'pdflatex -interaction=batchmode {}'
+def __run_raise(cmd):
+    ret = os.system(cmd)
+    if ret:
+        raise OSError('{} exit with status {}'.format(cmd, ret))
+
+
+def __quiet(cmd):
     quiet = ' >/dev/null 2>&1'
     if not os.getenv('VERBOSE'):
         cmd += quiet
-    ret = os.system(cmd.format(get_fname('tex')))
-    if ret:
-        raise OSError('{} exit with status {}'.format(cmd, ret))
-    ret = os.system(cmd.format(get_fname('tex')))  # for references
-    if ret:
-        raise OSError('{} exit with status {}'.format(cmd, ret))
+    return cmd
 
-    return os.path.abspath(get_fname('pdf')), os.path.abspath(get_fname('csv'))
 
-def generate_tex(tex_str):
-    old_cwd = os.getcwd()
-    home = lambda f : os.path.abspath(os.path.join(old_cwd, f))
-    with tmp():
-        fname = lambda ext : '__generated.{}'.format(ext)
-        with open(fname('tex'), 'w') as out:
-            out.write(tex_str)
+def __compile(get_fname):
+    cmd = __quiet('pdflatex -interaction=batchmode {}')
+    __run_raise(cmd.format(get_fname('tex')))
+    __run_raise(cmd.format(get_fname('tex')))  # for references
 
-        pdf_path, csv_path = __run(fname)
-        os.system('cp {} {}'.format(pdf_path, home('out.pdf')))
+    return get_fname('pdf')
 
-        csv_content = ''
-        with open(csv_path, 'r') as csv_file:
-            csv_content = ''.join(csv_file.readlines())
-    return home('out.pdf'), csv_content
+
+def __bbox(get_fname):
+    cmd = __quiet('pdftotext -bbox {}'.format(get_fname('pdf')))
+    __run_raise(cmd)
+    root = ET.parse(get_fname('html')).getroot()
+    body = root.getchildren()[1]
+    doc = body.getchildren()[0]
+    return doc
+
+coords = namedtuple('coords', 'left bottom right top')
+def __word_coord(page_attrib, word_attrib):
+    # left bottom right top
+    ph, xMin, yMax, xMax, yMin = (float(v) for v in
+                                  (page_attrib['height'],
+                                   word_attrib['xMin'],
+                                   word_attrib['yMax'],
+                                   word_attrib['xMax'],
+                                   word_attrib['yMin']))
+    return coords( xMin, ph - yMax, xMax, ph - yMin, )
+
+def __extract_imgs(page):
+    return {
+        word.text : __word_coord(page.attrib,
+                            word.attrib)
+        for word in page.getchildren()
+        }
+
+
+def generate_pdf(tex_str):
+    fname = lambda ext : os.path.abspath('__generated.{}'.format(ext))
+    with open(fname('tex'), 'w') as out:
+        out.write(tex_str)
+
+    pdf_path = __compile(fname)
+    doc = __bbox(fname)
+    page = doc.getchildren()[0]
+
+    return page
+
+
+def __convert_imgs(bboxen):
+    crop_cmd = 'pdfcrop -bbox "{left} {bottom} {right} {top}" __generated.pdf'
+    conv_cmd = 'pdftoppm __generated-crop.pdf {f} -png'
+    for word, bbox in bboxen.items():
+        crop = crop_cmd.format(left=bbox.left,
+                               bottom=bbox.bottom,
+                               right=bbox.right,
+                               top=bbox.top)
+        __run_raise(crop)
+        conv = conv_cmd.format(f=word)
+        __run_raise(conv)
 
 
 def main(words):
     tex_content = tex(words)
-    pdf, csv = generate_tex(tex_content)
-    print(csv.strip())
-
+    home = os.path.abspath(os.getcwd())
+    with tmp():
+        page = generate_pdf(tex_content)
+        lst = __extract_imgs(page)
+        __convert_imgs(lst)
+        cmd = 'cp *png ' + home
+        __run_raise(cmd)
 
 if __name__ == '__main__':
     from sys import argv
