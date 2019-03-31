@@ -128,7 +128,7 @@ def run(words):
         __run_raise(cmd)
 
 
-def main(args):
+def main():
     requirements = ('pdftotext',
                     'pdflatex',
                     'pdftoppm',
@@ -136,10 +136,11 @@ def main(args):
     for req in requirements:
         __run_raise('which ' + req, msg='Missing required executable {}'.format(req))
 
-    run(args)
-
-if __name__ == '__main__':
     from sys import argv
     if len(argv) < 2:
         exit('Usage: textpos word1 word2 ... wordn')
-    main(argv[1:])
+
+    run(argv[1:])
+
+if __name__ == '__main__':
+    main()

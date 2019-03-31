@@ -5,7 +5,7 @@ Get png images for words
 The `textrain` module can be run as follows
 
 ```bash
-python -m textrain word1 word2 ... wordn
+textrain word1 word2 ... wordn
 ```
 
 which generates one png file for each word.
@@ -15,7 +15,7 @@ which generates one png file for each word.
 Running
 
 ```bash
-python -m textrain kristian flikka lol
+textrain kristian flikka lol
 ```
 
 generates three images:
@@ -31,7 +31,7 @@ generates three images:
 
 Generating a pangram:
 ```
-python -m textrain the quick brown fox jumps over the lazy dog
+textrain the quick brown fox jumps over the lazy dog
 ```
 
 To generate all the letters in the alphabet, you might have to do a silly hack.

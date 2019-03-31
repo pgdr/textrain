@@ -49,4 +49,9 @@ setup(
     license="The unlicense",
     keywords="ocr education tex",
     version="0.0.1",
+    entry_points={
+        'console_scripts': [
+            'textrain = textrain:main',
+        ],
+    },
 )
