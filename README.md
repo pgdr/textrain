@@ -10,6 +10,25 @@ textrain word1 word2 ... wordn
 
 which generates one png file for each word.
 
+## Install
+
+First, ensure that you have the required tools
+
+* `pdftotext`
+* `pdflatex`
+* `pdftoppm`
+
+which on Ubuntu can be obtained by running
+
+`sudo apt install poppler-utils texlive-latex-base`
+
+Then install **textrain** with Pip:
+
+`pip install git+https://github.com/pgdr/textrain`
+
+
+
+
 ## Example
 
 Running
