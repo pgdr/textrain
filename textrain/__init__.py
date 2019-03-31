@@ -26,7 +26,7 @@ def _format(text, replacement):
 
 TEX = """\\nonstopmode
 \\documentclass{article}
-
+\\pagenumbering{gobble}
 \\begin{document}
 
 MY_OWN_FORMAT_FUNCTION
@@ -43,12 +43,6 @@ def tex(words):
     return _format(TEX, '\n'.join(['%s' % _supligs(word) for word in words]))
 
 
-def __run_raise(cmd):
-    ret = os.system(cmd)
-    if ret:
-        raise OSError('{} exit with status {}'.format(cmd, ret))
-
-
 def __quiet(cmd):
     quiet = ' >/dev/null 2>&1'
     if not os.getenv('VERBOSE'):
@@ -56,8 +50,16 @@ def __quiet(cmd):
     return cmd
 
 
+def __run_raise(cmd, msg=None):
+    ret = os.system(__quiet(cmd))
+    if ret:
+        if msg is None:
+            msg = '{} exit with status {}'.format(cmd, ret)
+        raise OSError(msg)
+
+
 def __compile(get_fname):
-    cmd = __quiet('pdflatex -interaction=batchmode {}')
+    cmd = 'pdflatex -interaction=batchmode {}'
     __run_raise(cmd.format(get_fname('tex')))
     __run_raise(cmd.format(get_fname('tex')))  # for references
 
@@ -65,7 +67,7 @@ def __compile(get_fname):
 
 
 def __bbox(get_fname):
-    cmd = __quiet('pdftotext -bbox {}'.format(get_fname('pdf')))
+    cmd = 'pdftotext -bbox {}'.format(get_fname('pdf'))
     __run_raise(cmd)
     root = ET.parse(get_fname('html')).getroot()
     body = root.getchildren()[1]
@@ -107,16 +109,15 @@ def __convert_imgs(bboxen):
     crop_cmd = 'pdfcrop -bbox "{left} {bottom} {right} {top}" __generated.pdf'
     conv_cmd = 'pdftoppm __generated-crop.pdf {f} -png'
     for word, bbox in bboxen.items():
-        crop = crop_cmd.format(left=bbox.left,
-                               bottom=bbox.bottom,
-                               right=bbox.right,
-                               top=bbox.top)
+        print(word, bbox)
+        crop = crop_cmd.format(left=bbox.left, bottom=bbox.bottom-1,
+                               right=bbox.right, top=bbox.top+1)
         __run_raise(crop)
         conv = conv_cmd.format(f=word)
         __run_raise(conv)
 
 
-def main(words):
+def run(words):
     tex_content = tex(words)
     home = os.path.abspath(os.getcwd())
     with tmp():
@@ -125,6 +126,17 @@ def main(words):
         __convert_imgs(lst)
         cmd = 'cp *png ' + home
         __run_raise(cmd)
+
+
+def main(args):
+    requirements = ('pdftotext',
+                    'pdflatex',
+                    'pdftoppm',
+                    )
+    for req in requirements:
+        __run_raise('which ' + req, msg='Missing required executable {}'.format(req))
+
+    run(args)
 
 if __name__ == '__main__':
     from sys import argv
