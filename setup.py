@@ -33,7 +33,7 @@ def readme():
 
 
 
-REQUIREMENTS = ('pdftotext', 'pdflatex', 'pdftoppm')
+REQUIREMENTS = ('pdftotext', 'pdflatex', 'pdftoppm', 'pdfcrop')
 for req in REQUIREMENTS:
     msg = 'Missing required tool {}.  Consider apt install it.'.format(req)
     print('Checking for tool {}'.format(req), end=' ... ')

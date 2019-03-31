@@ -17,10 +17,11 @@ First, ensure that you have the required tools
 * `pdftotext`
 * `pdflatex`
 * `pdftoppm`
+* `pdfcrop`
 
 which on Ubuntu can be obtained by running
 
-`sudo apt install poppler-utils texlive-latex-base`
+`sudo apt install texlive-latex-base texlive-extra-utils poppler-utils`
 
 Then install **textrain** with Pip:
 
